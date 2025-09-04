@@ -1,0 +1,32 @@
+/* client/src/components/ConnectionStatus.css */
+
+.connection-status {
+  display: flex;
+  align-items: center;
+  font-weight: bold;
+  font-size: 14px;
+}
+
+.status-indicator {
+  width: 12px;
+  height: 12px;
+  border-radius: 50%;
+  margin-right: 8px;
+  background-color: gray;
+}
+
+.status-connected .status-indicator {
+  background-color: green;
+}
+
+.status-connecting .status-indicator {
+  background-color: orange;
+}
+
+.status-error .status-indicator {
+  background-color: red;
+}
+
+.status-text {
+  user-select: none;
+}

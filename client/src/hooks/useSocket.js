@@ -1,6 +1,6 @@
 // client/src/hooks/useSocket.js
 import { useEffect, useRef, useCallback, useState } from 'react';
-import io from 'socket.io-client';
+import { io } from 'socket.io-client';
 
 export const useSocket = () => {
   const socketRef = useRef(null);
@@ -8,9 +8,12 @@ export const useSocket = () => {
   const [connectionError, setConnectionError] = useState(null);
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
 
-  // Connection management[17]
+  // Connection management
   const connect = useCallback(() => {
     if (socketRef.current?.connected) return;
+
+    // Retrieve JWT token from localStorage or your auth context/state
+    const token = localStorage.getItem('jwtToken'); // Adjust if you use a different storage or method
 
     socketRef.current = io(process.env.REACT_APP_WS_URL || 'http://localhost:5000', {
       transports: ['websocket', 'polling'],
@@ -19,10 +22,11 @@ export const useSocket = () => {
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
-      // Enable compression
       compression: true,
-      // Disable auto connect if you want manual control
-      autoConnect: true
+      autoConnect: true,
+      auth: {
+        token,  // Attach the JWT token here for backend authentication
+      }
     });
 
     // Connection event handlers
@@ -36,7 +40,7 @@ export const useSocket = () => {
     socketRef.current.on('disconnect', (reason) => {
       console.log('Disconnected:', reason);
       setIsConnected(false);
-      
+
       if (reason === 'io server disconnect') {
         // Server disconnected, try to reconnect manually
         socketRef.current.connect();
@@ -60,7 +64,7 @@ export const useSocket = () => {
       setConnectionError('Failed to reconnect to server');
     });
 
-    // Heartbeat to maintain connection[2]
+    // Heartbeat to maintain connection
     const heartbeat = setInterval(() => {
       if (socketRef.current?.connected) {
         socketRef.current.emit('ping');

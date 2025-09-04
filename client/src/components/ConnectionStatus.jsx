@@ -1,4 +1,5 @@
 // client/src/components/ConnectionStatus.jsx
+
 import React from 'react';
 import './ConnectionStatus.css';
 
