@@ -1,0 +1,25 @@
+/* client/src/components/VideoGrid.css */
+.video-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+  background: #222;
+  padding: 10px;
+}
+
+.video-element {
+  width: 200px;
+  height: 150px;
+  background: black;
+  border-radius: 4px;
+  object-fit: cover;
+}
+.end-call-btn {
+  margin-top: 10px;
+  padding: 8px 12px;
+  background: #e74c3c;
+  color: white;
+  border: none;
+  border-radius: 4px;
+  cursor: pointer;
+}
