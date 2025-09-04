@@ -1,5 +1,4 @@
 // server/src/socket/socketManager.js
-
 const { v4: uuidv4 } = require('uuid');
 const { generateRoomToken, verifyRoomToken } = require('../utils/jwtUtils');
 
@@ -19,7 +18,7 @@ class SocketManager {
       }
       socket.roomId = decoded.roomId;
       socket.userId = decoded.userId;
-      socket.role = decoded.role || 'participant';
+      socket.role = decoded.role || 'participant'; // Default role
       next();
     });
 

@@ -1,10 +1,13 @@
 // server/src/index.js
+
 const express = require('express');
 const http = require('http');
 const { Server } = require('socket.io');
 const cors = require('cors');
 const DatabaseManager = require('./database/DatabaseManager');
 const SocketManager = require('./socket/SocketManager');
+
+console.log('Starting backend server...');
 
 const app = express();
 const server = http.createServer(app);
@@ -16,10 +19,10 @@ const io = new Server(server, {
     methods: ["GET", "POST"],
     credentials: true
   },
-  // Connection timeout and ping settings[17]
+  // Connection timeout and ping settings
   pingTimeout: 60000,
   pingInterval: 25000,
-  // Enable compression[8]
+  // Enable compression
   compression: true,
   // Message size limits
   maxHttpBufferSize: 1e6 // 1MB
@@ -43,16 +46,21 @@ const socketManager = new SocketManager(io, db);
 
 // Health check endpoint
 app.get('/health', (req, res) => {
-  res.json({ 
-    status: 'ok', 
+  res.json({
+    status: 'ok',
     connections: io.engine.clientsCount,
-    rooms: socketManager.rooms.size 
+    rooms: socketManager.rooms.size
   });
 });
 
-// Start server
 const PORT = process.env.PORT || 5000;
-// server/src/index.js (after server.listen)
+
+// Start listening on all network interfaces to allow Docker port mapping
+server.listen(PORT, '0.0.0.0', () => {
+  console.log(`Server listening on port ${PORT}`);
+});
+
+// Periodic cleanup of expired rooms
 setInterval(async () => {
   try {
     await db.cleanupExpiredRooms();
@@ -65,6 +73,16 @@ setInterval(async () => {
 // Graceful shutdown
 process.on('SIGINT', () => {
   console.log('Shutting down server...');
-  server.close();
-  process.exit(0);
+  server.close(() => {
+    process.exit(0);
+  });
+});
+
+// Capture unhandled exceptions and rejections
+process.on('uncaughtException', (err) => {
+  console.error('Uncaught Exception:', err);
+});
+
+process.on('unhandledRejection', (reason) => {
+  console.error('Unhandled Rejection:', reason);
 });

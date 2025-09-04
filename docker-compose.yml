@@ -2,7 +2,7 @@ services:
   frontend:
     build: ./client
     ports:
-      - "3000:3000"
+      - "3000:80"
     environment:
       - REACT_APP_API_URL=http://localhost:5000
       - REACT_APP_WS_URL=http://localhost:5000
