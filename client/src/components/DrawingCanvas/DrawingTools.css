@@ -1,0 +1,153 @@
+/* client/src/components/DrawingCanvas/DrawingTools.css */
+
+/* container */
+.drawing-tools {
+  width: 250px;
+  padding: 18px;
+  background: #ffffff;
+  border-right: 1px solid #e6e6e6;
+  box-sizing: border-box;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+/* sections */
+.tool-section {
+  margin-bottom: 12px;
+}
+
+.section-title,
+.tool-section h4 {
+  margin: 0 0 8px 0;
+  font-size: 13px;
+  font-weight: 600;
+  color: #333;
+}
+
+/* grid of tools */
+.tool-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+
+.tool-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  height: 40px;
+  border-radius: 6px;
+  border: 1.5px solid #e0e0e0;
+  background: #fff;
+  cursor: pointer;
+  font-size: 16px;
+  transition: all 0.12s ease;
+}
+
+.tool-btn:hover {
+  transform: translateY(-2px);
+  border-color: #007bff;
+}
+
+.tool-btn.active {
+  background: #e7f1ff;
+  border-color: #007bff;
+}
+
+/* color picker area */
+.color-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.current-color {
+  width: 44px;
+  height: 44px;
+  border-radius: 6px;
+  border: 2px solid #ddd;
+}
+
+.preset-colors {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.color-btn {
+  width: 30px;
+  height: 30px;
+  border-radius: 6px;
+  border: 2px solid #ddd;
+  cursor: pointer;
+}
+
+.color-btn.active {
+  border-color: #007bff;
+}
+
+/* line width controls */
+.line-width-selector {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.line-width-btn {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px;
+  border-radius: 6px;
+  border: 1px solid #e6e6e6;
+  background: #fff;
+  cursor: pointer;
+}
+
+.line-width-btn.active {
+  background: #e7f1ff;
+  border-color: #007bff;
+}
+
+.line-preview {
+  width: 40px;
+  border-radius: 4px;
+  background: #000;
+  display: inline-block;
+  height: 6px;
+}
+
+/* action buttons */
+.action-buttons {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.action-btn {
+  padding: 8px 10px;
+  border-radius: 6px;
+  border: 1px solid #dcdcdc;
+  background: #fff;
+  cursor: pointer;
+  font-weight: 600;
+}
+
+.action-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+/* small responsive tweaks */
+@media (max-width: 768px) {
+  .drawing-tools {
+    width: 100%;
+    padding: 12px;
+    border-right: none;
+    border-bottom: 1px solid #e6e6e6;
+  }
+  .tool-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}

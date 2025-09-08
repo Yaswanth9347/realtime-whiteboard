@@ -1,0 +1,96 @@
+/* client/src/components/DrawingCanvas/ColorPicker.css */
+
+.color-picker {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+
+.current-color {
+  width: 44px;
+  height: 44px;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.2s ease, border-color 0.2s ease;
+}
+
+.current-color:hover {
+  border-color: #007bff;
+  transform: scale(1.05);
+}
+
+.current-color:focus,
+.current-color:focus-visible {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* preset swatches */
+.preset-colors {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 6px;
+}
+
+.color-btn {
+  width: 32px;
+  height: 32px;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: transform 0.15s ease, border-color 0.15s ease;
+}
+
+.color-btn:hover {
+  transform: scale(1.1);
+  border-color: #007bff;
+}
+
+.color-btn.active {
+  border-color: #007bff;
+  border-width: 3px;
+}
+
+.color-btn:focus,
+.color-btn:focus-visible {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* custom color input */
+.custom-picker {
+  margin-top: 6px;
+}
+
+.custom-picker input[type="color"] {
+  -webkit-appearance: none;
+  border: 2px solid #ccc;
+  border-radius: 6px;
+  width: 44px;
+  height: 44px;
+  padding: 0;
+  cursor: pointer;
+  background: none;
+  transition: border-color 0.2s ease;
+}
+
+.custom-picker input[type="color"]:hover {
+  border-color: #007bff;
+}
+
+.custom-picker input[type="color"]:focus,
+.custom-picker input[type="color"]:focus-visible {
+  outline: 2px solid #007bff;
+  outline-offset: 2px;
+}
+
+/* remove inner default UI in WebKit */
+.custom-picker input[type="color"]::-webkit-color-swatch-wrapper {
+  padding: 0;
+}
+
+.custom-picker input[type="color"]::-webkit-color-swatch {
+  border: none;
+  border-radius: 4px;
+}

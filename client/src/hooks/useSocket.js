@@ -1,106 +1,161 @@
-// client/src/hooks/useSocket.js
-import { useEffect, useRef, useCallback, useState } from 'react';
+import { useEffect, useRef, useState, useCallback } from 'react';
 import { io } from 'socket.io-client';
 
-export const useSocket = () => {
+/**
+ * useSocket hook
+ *
+ * Usage:
+ *   const { socket, connectSocket, disconnectSocket, isConnected } = useSocket({ wsUrl });
+ *   // after obtaining server token:
+ *   connectSocket(token);
+ *
+ * Notes:
+ * - Token must be obtained from server (POST /api/rooms or /api/rooms/join).
+ * - Token is kept in sessionStorage for the session lifetime (optional).
+ */
+export default function useSocket({ wsUrl } = {}) {
   const socketRef = useRef(null);
+  const heartbeatRef = useRef(null);
+  const [socket, setSocket] = useState(null);
   const [isConnected, setIsConnected] = useState(false);
   const [connectionError, setConnectionError] = useState(null);
   const [reconnectAttempts, setReconnectAttempts] = useState(0);
 
-  // Connection management
-  const connect = useCallback(() => {
-    if (socketRef.current?.connected) return;
+  // Connect with a JWT token (call this AFTER you get token from server)
+  const connectSocket = useCallback((token) => {
+    if (!token || typeof token !== 'string') {
+      throw new Error('connectSocket requires a token string');
+    }
 
-    // Retrieve JWT token from localStorage or your auth context/state
-    const token = localStorage.getItem('jwtToken'); // Adjust if you use a different storage or method
+    // if already connected, no-op
+    if (socketRef.current && socketRef.current.connected) {
+      return socketRef.current;
+    }
 
-    socketRef.current = io(process.env.REACT_APP_WS_URL || 'http://localhost:5000', {
+    // create socket with auth token
+    const endpoint = wsUrl || process.env.REACT_APP_WS_URL || 'http://localhost:5000';
+    const s = io(endpoint, {
       transports: ['websocket', 'polling'],
-      timeout: 5000,
+      auth: { token },
       reconnection: true,
       reconnectionAttempts: 5,
       reconnectionDelay: 1000,
       reconnectionDelayMax: 5000,
-      compression: true,
-      autoConnect: true,
-      auth: {
-        token,  // Attach the JWT token here for backend authentication
-      }
+      timeout: 5000,
+      autoConnect: true
     });
 
-    // Connection event handlers
-    socketRef.current.on('connect', () => {
-      console.log('Connected to server');
+    socketRef.current = s;
+    setSocket(s);
+    setConnectionError(null);
+
+    // attach handlers
+    s.on('connect', () => {
       setIsConnected(true);
       setConnectionError(null);
       setReconnectAttempts(0);
+      // start heartbeat
+      if (heartbeatRef.current) clearInterval(heartbeatRef.current);
+      heartbeatRef.current = setInterval(() => {
+        try {
+          if (socketRef.current?.connected) socketRef.current.emit('ping');
+        } catch (e) {
+          // ignore
+        }
+      }, 30000); // every 30s
     });
 
-    socketRef.current.on('disconnect', (reason) => {
-      console.log('Disconnected:', reason);
+    s.on('disconnect', (reason) => {
       setIsConnected(false);
-
-      if (reason === 'io server disconnect') {
-        // Server disconnected, try to reconnect manually
-        socketRef.current.connect();
-      }
+      // do not reveal token in logs
+      console.info('Socket disconnected:', reason);
+      // leave heartbeat running; it will be cleared on final cleanup
     });
 
-    socketRef.current.on('connect_error', (error) => {
-      console.error('Connection error:', error);
-      setConnectionError(error.message);
-      setReconnectAttempts(prev => prev + 1);
+    s.on('connect_error', (err) => {
+      console.warn('Socket connect_error:', err?.message || err);
+      setConnectionError(err?.message || 'connect_error');
+      setReconnectAttempts((n) => n + 1);
     });
 
-    socketRef.current.on('reconnect', (attemptNumber) => {
-      console.log('Reconnected after', attemptNumber, 'attempts');
+    s.on('reconnect', (attemptNumber) => {
       setIsConnected(true);
       setConnectionError(null);
+      setReconnectAttempts(0);
+      console.info('Socket reconnected after', attemptNumber, 'attempts');
     });
 
-    socketRef.current.on('reconnect_failed', () => {
-      console.error('Failed to reconnect');
+    s.on('reconnect_failed', () => {
+      console.error('Socket failed to reconnect');
       setConnectionError('Failed to reconnect to server');
     });
 
-    // Heartbeat to maintain connection
-    const heartbeat = setInterval(() => {
-      if (socketRef.current?.connected) {
-        socketRef.current.emit('ping');
-      }
-    }, 30000); // Every 30 seconds
-
-    socketRef.current.on('pong', () => {
-      // Server responded to ping
+    // optional: respond to server pong
+    s.on('pong', () => {
+      // server alive
     });
 
-    return () => {
-      clearInterval(heartbeat);
-    };
+    // persist token in session for page-refresh within the same tab (optional)
+    try {
+      sessionStorage.setItem('roomToken', token);
+    } catch (e) {
+      // ignore if storage is blocked
+    }
 
-  }, []);
+    return s;
+  }, [wsUrl]);
 
-  const disconnect = useCallback(() => {
-    if (socketRef.current) {
-      socketRef.current.disconnect();
-      socketRef.current = null;
+  // disconnect & cleanup
+  const disconnectSocket = useCallback(() => {
+    try {
+      if (heartbeatRef.current) {
+        clearInterval(heartbeatRef.current);
+        heartbeatRef.current = null;
+      }
+      if (socketRef.current) {
+        socketRef.current.disconnect();
+        socketRef.current = null;
+      }
+    } catch (e) {
+      // ignore
+    } finally {
+      setSocket(null);
       setIsConnected(false);
+      setConnectionError(null);
+      setReconnectAttempts(0);
+      try { sessionStorage.removeItem('roomToken'); } catch (e) { /* ignore */ }
     }
   }, []);
 
-  // Auto connect on mount
+  // on mount: auto-connect if a token exists in sessionStorage
   useEffect(() => {
-    connect();
-    return () => disconnect();
-  }, [connect, disconnect]);
+    const token = (() => {
+      try { return sessionStorage.getItem('roomToken'); } catch (e) { return null; }
+    })();
+    if (token && !socketRef.current) {
+      // attempt connection; ignore thrown errors here
+      try { connectSocket(token); } catch (e) { /* ignore */ }
+    }
+
+    return () => {
+      // cleanup on unmount
+      if (heartbeatRef.current) {
+        clearInterval(heartbeatRef.current);
+        heartbeatRef.current = null;
+      }
+      if (socketRef.current) {
+        try { socketRef.current.disconnect(); } catch (e) { /* ignore */ }
+        socketRef.current = null;
+      }
+    };
+  }, [connectSocket]); // run once
 
   return {
-    socket: socketRef.current,
+    socket,
     isConnected,
     connectionError,
     reconnectAttempts,
-    connect,
-    disconnect
+    connectSocket,
+    disconnectSocket
   };
-};
+}

@@ -3,30 +3,68 @@
 .connection-status {
   display: flex;
   align-items: center;
-  font-weight: bold;
+  font-weight: 600;
   font-size: 14px;
+  color: #222;
+  gap: 8px;
+  transition: color 0.3s ease;
 }
 
 .status-indicator {
   width: 12px;
   height: 12px;
   border-radius: 50%;
-  margin-right: 8px;
+  flex-shrink: 0;
   background-color: gray;
+  transition: background-color 0.3s ease, transform 0.3s ease;
 }
 
+/* connected */
 .status-connected .status-indicator {
-  background-color: green;
+  background-color: #28a745; /* green */
 }
 
+.status-connected .status-text {
+  color: #28a745;
+}
+
+/* connecting / reconnecting */
 .status-connecting .status-indicator {
-  background-color: orange;
+  background-color: #fd7e14; /* orange */
+  animation: pulse 1.2s infinite;
 }
 
+.status-connecting .status-text {
+  color: #fd7e14;
+}
+
+/* error */
 .status-error .status-indicator {
-  background-color: red;
+  background-color: #dc3545; /* red */
 }
 
+.status-error .status-text {
+  color: #dc3545;
+}
+
+/* text */
 .status-text {
   user-select: none;
+  transition: color 0.3s ease, opacity 0.3s ease;
+}
+
+/* pulse animation for connecting */
+@keyframes pulse {
+  0% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
+  50% {
+    transform: scale(1.3);
+    opacity: 1;
+  }
+  100% {
+    transform: scale(1);
+    opacity: 0.8;
+  }
 }

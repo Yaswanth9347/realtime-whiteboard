@@ -1,8 +1,8 @@
-// components/DrawingCanvas/ColorPicker.jsx
+// client/src/components/DrawingCanvas/ColorPicker.jsx
 import React, { useState } from 'react';
 import './ColorPicker.css';
 
-const ColorPicker = ({ currentColor, onColorChange }) => {
+const ColorPicker = ({ currentColor = '#000000', onColorChange }) => {
   const [showCustomPicker, setShowCustomPicker] = useState(false);
 
   const presetColors = [
@@ -11,23 +11,40 @@ const ColorPicker = ({ currentColor, onColorChange }) => {
     '#FFC0CB', '#A52A2A', '#808080', '#008000', '#000080'
   ];
 
+  const handleChange = (color) => {
+    if (typeof onColorChange === 'function') {
+      onColorChange(color);
+    }
+  };
+
   return (
     <div className="color-picker">
       {/* Current Color Display */}
-      <div 
+      <div
         className="current-color"
         style={{ backgroundColor: currentColor }}
         onClick={() => setShowCustomPicker(!showCustomPicker)}
+        role="button"
+        aria-label={`Current color: ${currentColor}. Click to ${showCustomPicker ? 'hide' : 'show'} custom picker`}
+        tabIndex={0}
+        onKeyDown={(e) => {
+          if (e.key === 'Enter' || e.key === ' ') {
+            e.preventDefault();
+            setShowCustomPicker(!showCustomPicker);
+          }
+        }}
       />
 
       {/* Preset Colors */}
       <div className="preset-colors">
-        {presetColors.map(color => (
+        {presetColors.map((color) => (
           <button
             key={color}
+            type="button"
             className={`color-btn ${currentColor === color ? 'active' : ''}`}
             style={{ backgroundColor: color }}
-            onClick={() => onColorChange(color)}
+            onClick={() => handleChange(color)}
+            aria-label={`Select color ${color}`}
           />
         ))}
       </div>
@@ -38,7 +55,8 @@ const ColorPicker = ({ currentColor, onColorChange }) => {
           <input
             type="color"
             value={currentColor}
-            onChange={(e) => onColorChange(e.target.value)}
+            onChange={(e) => handleChange(e.target.value)}
+            aria-label="Custom color picker"
           />
         </div>
       )}

@@ -1,18 +1,30 @@
+version: '3.8'
+
+# Realtime whiteboard docker-compose
+# - Frontend talks to backend using Docker service name "backend"
+# - Backend talks to Postgres service "postgres"
+# - Replace JWT_SECRET and DB_PASSWORD with secure values in production (or use env file / secrets)
+
 services:
   frontend:
     build: ./client
+    image: realtime-whiteboard-frontend:latest
+    # If your frontend build is served via nginx inside the container, container port is likely 80.
+    # If you're running the dev server inside the container and it listens on 3000, change "3000:80" -> "3000:3000"
     ports:
       - "3000:80"
     environment:
-      - REACT_APP_API_URL=http://localhost:5000
-      - REACT_APP_WS_URL=http://localhost:5000
+      - REACT_APP_API_URL=http://backend:5000
+      - REACT_APP_WS_URL=http://backend:5000
     depends_on:
       - backend
+    restart: unless-stopped
     networks:
       - whiteboard-network
 
   backend:
     build: ./server
+    image: realtime-whiteboard-backend:latest
     ports:
       - "5000:5000"
     environment:
@@ -21,14 +33,18 @@ services:
       - DB_NAME=whiteboard_db
       - DB_USER=postgres
       - DB_PASSWORD=password
-      - JWT_SECRET=your_jwt_secret
+      - JWT_SECRET=your_jwt_secret_here
+      - JWT_EXPIRY=24h
+      - CLIENT_URL=http://localhost:3000
     depends_on:
       - postgres
+    restart: unless-stopped
     networks:
       - whiteboard-network
 
   postgres:
     image: postgres:15
+    container_name: realtime-whiteboard-postgres
     ports:
       - "5432:5432"
     environment:
@@ -37,6 +53,7 @@ services:
       - POSTGRES_PASSWORD=password
     volumes:
       - postgres_data:/var/lib/postgresql/data
+    restart: unless-stopped
     networks:
       - whiteboard-network
 

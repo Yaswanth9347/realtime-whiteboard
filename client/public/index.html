@@ -1,12 +1,45 @@
 <!-- client/public/index.html -->
 <!DOCTYPE html>
 <html lang="en">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>Realtime Whiteboard</title>
-</head>
-<body>
-  <div id="root"></div>
-</body>
+  <head>
+    <meta charset="utf-8" />
+    <!-- viewport for responsive layout -->
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+
+    <!-- basic SEO / social -->
+    <meta name="description" content="Realtime collaborative whiteboard — draw together with video, cursors, and live updates." />
+    <meta property="og:title" content="Realtime Whiteboard" />
+    <meta property="og:description" content="Realtime collaborative whiteboard — draw together with video, cursors, and live updates." />
+    <meta name="theme-color" content="#ffffff" />
+
+    <!-- Lightweight Content Security Policy (permissive for dev). 
+         Tighten for production to list exact origins for scripts/connects. -->
+    <meta http-equiv="Content-Security-Policy" content="default-src 'self' data: blob: 'unsafe-inline'; script-src 'self' 'unsafe-inline' 'unsafe-eval' data:; style-src 'self' 'unsafe-inline' data:; img-src 'self' data: blob:; connect-src * ws: wss:;">
+
+    <title>Realtime Whiteboard</title>
+
+    <!-- favicon / touch icon placeholders (replace with your assets) -->
+    <link rel="icon" href="%PUBLIC_URL%/favicon.ico" />
+    <link rel="apple-touch-icon" href="%PUBLIC_URL%/apple-touch-icon.png" />
+
+    <!-- web manifest (optional) -->
+    <link rel="manifest" href="%PUBLIC_URL%/manifest.json" />
+
+    <!-- preload main bundle if you know its path (optional) -->
+    <!-- <link rel="preload" href="%PUBLIC_URL%/main.d27bdb4d.js" as="script"> -->
+
+    <!-- You can add custom global CSS here if needed -->
+    <!-- <link rel="stylesheet" href="%PUBLIC_URL%/styles.css"> -->
+  </head>
+  <body>
+    <noscript>
+      <strong>JavaScript is required to run this app. Please enable JavaScript in your browser.</strong>
+    </noscript>
+
+    <div id="root" role="application" aria-label="Realtime whiteboard application"></div>
+
+    <!-- Defer script so HTML parses first. Replace with your actual production bundle path if different. -->
+    <!-- If you're using Create React App, the build will inject the proper script tag automatically. -->
+    <script defer src="%PUBLIC_URL%/main.d27bdb4d.js"></script>
+  </body>
 </html>
